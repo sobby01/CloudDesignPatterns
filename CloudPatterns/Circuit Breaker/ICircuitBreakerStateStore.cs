@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace CloudPatterns.Circuit_Breaker
 {
-    internal class ICircuitBreakerStateStore
+    public interface ICircuitBreakerStateStore
     {
+        CircuitState GetCircuitState(string circuitId);
+        void SetCircuitState(string circuitId, CircuitState state);
+        void IncrementFailureCount(string circuitId);
+        void ResetFailureCount(string circuitId);
     }
 }
