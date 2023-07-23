@@ -42,7 +42,7 @@ namespace CloudPatterns.Circuit_Breaker
                         lastFailureTime = DateTime.UtcNow;
                         if (consecutiveFailures >= failureThreshold)
                         {
-                            state = CircuitState.Open;
+                            stateStore.SetCircuitState(circuitId, CircuitState.Open);
                             Console.WriteLine("Circuit Breaker is OPEN. Requests are blocked.");
                         }
                         throw;
@@ -51,7 +51,7 @@ namespace CloudPatterns.Circuit_Breaker
                 case CircuitState.Open:
                     if (DateTime.UtcNow >= lastFailureTime + timeoutDuration)
                     {
-                        state = CircuitState.HalfOpen;
+                        stateStore.SetCircuitState(circuitId, CircuitState.HalfOpen);
                         Console.WriteLine("Circuit Breaker is in HALF-OPEN state. Testing the connection.");
                         return await ExecuteAsync(action);
                     }
@@ -65,7 +65,7 @@ namespace CloudPatterns.Circuit_Breaker
                     {
                         T result = await action();
                         consecutiveFailures = 0;
-                        state = CircuitState.Closed;
+                        stateStore.SetCircuitState(circuitId, CircuitState.Closed);
                         Console.WriteLine("Circuit Breaker is CLOSED. Requests are allowed.");
                         return result;
                     }
@@ -75,7 +75,7 @@ namespace CloudPatterns.Circuit_Breaker
                         lastFailureTime = DateTime.UtcNow;
                         if (consecutiveFailures >= failureThreshold)
                         {
-                            state = CircuitState.Open;
+                            stateStore.SetCircuitState(circuitId, CircuitState.Open);
                             Console.WriteLine("Circuit Breaker is OPEN. Requests are blocked.");
                         }
                         throw;
