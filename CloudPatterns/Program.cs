@@ -1,10 +1,117 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using CloudPatterns.Circuit_Breaker;
+using CloudPatterns.Rate_Limiting;
 using CloudPatterns.RetryPattern;
+SlidingWindowRateLimiting2();
+//FixedWindowRateLimiting();
+//SlidingWindowRateLimiting();
+Console.ReadKey();
+//RetryPattern();
+//await CircuitBreakerOperation();
 
-RetryPattern();
-await CircuitBreakerOperation();
+#region RateLimiting
 
+void SlidingWindowRateLimiting2()
+{
+    // Create a Sliding Window Rate Limiter with a limit of 10 requests per window of 1 second
+    var slidingWindowRateLimiter = new SlidingWindowRateLimiter_Version2(limit: 10, windowMilliSeconds: 1000);
+
+    // Simulate requests
+    for (int i = 1; i <= 30; i++)
+    {
+        if (slidingWindowRateLimiter.TryAcquire())
+        {
+            Console.WriteLine($"Request {i} - Acquired. Processing...");
+        }
+        else
+        {
+            Console.WriteLine($"Request {i} - Rejected. Rate limit exceeded.");
+        }
+        Thread.Sleep(100); // Sleep between each request
+    }
+
+    // Display the total requests processed in the sliding window
+    int totalRequestsInWindow = slidingWindowRateLimiter.GetTotalRequestsInWindow();
+    Console.WriteLine($"Total Requests Processed in the Sliding Window: {totalRequestsInWindow}");
+}
+
+void FixedWindowRateLimiting()
+{
+    // Create a Fixed Window Rate Limiter with a limit of 5 requests per window of 1 second
+    var rateLimiter = new FixedWindowRateLimiter(limit: 10, windowMilliSeconds: 1000);
+
+    // Simulate requests for the first interval 12:00:00 - 12:00:59
+    // Simulate 10 requests
+    rateLimiter.stopwatch.Start();
+    for (int i = 1; i <= 15; i++)
+    {
+        if (rateLimiter.TryAcquire())
+        {
+            Console.WriteLine($"Request {i}: Acquired. Processing... {DateTime.Now}");
+            // Simulate request processing
+            Console.WriteLine($"Request {i}: Processing completed.");
+        }
+        else
+        {
+            Console.WriteLine($"Request {i}: Rejected. Rate limit exceeded.");
+        }
+        Thread.Sleep(100);
+    }
+
+    // Display the total requests processed in the first interval
+    int totalRequestsInFirstInterval = rateLimiter.GetTotalRequestsInWindow();
+    Console.WriteLine($"Total Requests Processed in 12:00:00 - 12:00:59: {totalRequestsInFirstInterval}");
+}
+
+void SlidingWindowRateLimiting()
+{
+    // Create a Sliding Window Rate Limiter with a limit of 5 requests per window of 1 second
+    var rateLimiter = new SlidingWindowRateLimiter(limit: 2, windowMilliSeconds: 1000);
+
+    // Simulate 10 requests
+    for (int i = 1; i <= 10; i++)
+    {
+        if (rateLimiter.TryAcquire())
+        {
+            Console.WriteLine($"Request {i}: Acquired. Processing...");
+            // Simulate request processing
+            Thread.Sleep(200);
+            Console.WriteLine($"Request {i}: Processing completed.");
+        }
+        else
+        {
+            Console.WriteLine($"Request {i}: Rejected. Rate limit exceeded.");
+        }
+        Thread.Sleep(200); // Sleep between each request
+    }
+}
+
+void TokenBuketRateLimiting()
+{
+    // Create a Token Bucket Rate Limiter with a bucket capacity of 5 tokens, refilling 2 tokens every 1 second
+    var rateLimiter = new TokenBucketRateLimiter(capacity: 5, refillTokens: 2, refillIntervalSeconds: 1);
+
+    // Simulate 10 requests
+    for (int i = 1; i <= 10; i++)
+    {
+        if (rateLimiter.TryAcquire())
+        {
+            Console.WriteLine($"Request {i}: Acquired. Processing...");
+            // Simulate request processing
+            Thread.Sleep(200);
+            Console.WriteLine($"Request {i}: Processing completed.");
+        }
+        else
+        {
+            Console.WriteLine($"Request {i}: Rejected. Rate limit exceeded.");
+        }
+        Thread.Sleep(200); // Sleep between each request
+    }
+}
+
+#endregion
+
+#region CircuitBreaker
 async Task<OperationResult<string>> CircuitBreakerOperation()
 {
     // Create an instance of the state store
@@ -46,6 +153,9 @@ async Task<string> SomeAsyncOperation()
     return "Success";
 }
 
+#endregion
+
+#region RetryPattern
 void RetryPattern()
 {
     int maxRetryAttempts = 3;
@@ -70,3 +180,5 @@ async Task AsyncOperation()
     await Task.Delay(100); // Simulate some asynchronous work
     Console.WriteLine("Async operation succeeded!");
 }
+
+#endregion

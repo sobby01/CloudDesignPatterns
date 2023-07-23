@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="SideCar\" />
+    <Folder Include="Throttling\" />
+  </ItemGroup>
+
 </Project>
