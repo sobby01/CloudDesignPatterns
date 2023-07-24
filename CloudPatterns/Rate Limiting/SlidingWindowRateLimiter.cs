@@ -26,6 +26,7 @@ namespace CloudPatterns.Rate_Limiting
             // Remove old request times that are outside the current window
             while (requestTimes.Count > 0 && now - requestTimes.Peek() >= windowDuration)
             {
+                //this is removing all the calls which are not part of the current window
                 requestTimes.Dequeue();
             }
 
