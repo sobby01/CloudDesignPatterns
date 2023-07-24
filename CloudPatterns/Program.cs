@@ -2,8 +2,10 @@
 using CloudPatterns.Circuit_Breaker;
 using CloudPatterns.Rate_Limiting;
 using CloudPatterns.RetryPattern;
-SlidingWindowRateLimiting2();
-//FixedWindowRateLimiting();
+
+//SlidingWindowRateLimiting3();
+//SlidingWindowRateLimiting2();
+FixedWindowRateLimiting();
 //SlidingWindowRateLimiting();
 Console.ReadKey();
 //RetryPattern();
@@ -27,22 +29,49 @@ void SlidingWindowRateLimiting2()
         {
             Console.WriteLine($"Request {i} - Rejected. Rate limit exceeded.");
         }
-        Thread.Sleep(100); // Sleep between each request
+        //Thread.Sleep(100); // Sleep between each request
     }
 
     // Display the total requests processed in the sliding window
     int totalRequestsInWindow = slidingWindowRateLimiter.GetTotalRequestsInWindow();
     Console.WriteLine($"Total Requests Processed in the Sliding Window: {totalRequestsInWindow}");
 }
+void Forward(object packet)
+{
+    Console.WriteLine("Packet Forwarded: " + packet.ToString());
+}
+
+void Drop(object packet)
+{
+    Console.WriteLine("Packet Dropped: " + packet.ToString());
+}
+
+void SlidingWindowRateLimiting3()
+{
+    // Create a Sliding Window Rate Limiter with a limit of 10 requests per window of 1 second
+
+    SlidingWindow_Version3 throttle = new SlidingWindow_Version3(3, 1, Forward, Drop);
+
+    int packet = 0;
+
+    for (int i = 1; i <= 25; i++)
+    {
+        Thread.Sleep(300); // 100 milliseconds delay, equivalent to sleep(0.1) in Python
+        throttle.Handle(packet);
+        packet++;
+    }
+
+
+}
 
 void FixedWindowRateLimiting()
 {
     // Create a Fixed Window Rate Limiter with a limit of 5 requests per window of 1 second
-    var rateLimiter = new FixedWindowRateLimiter(limit: 10, windowMilliSeconds: 1000);
+    var rateLimiter = new FixedWindowRateLimiter(capacity: 10, windowDuration: TimeSpan.FromSeconds(1));
 
     // Simulate requests for the first interval 12:00:00 - 12:00:59
     // Simulate 10 requests
-    rateLimiter.stopwatch.Start();
+    //rateLimiter.stopwatch.Start();
     for (int i = 1; i <= 15; i++)
     {
         if (rateLimiter.TryAcquire())
@@ -57,26 +86,24 @@ void FixedWindowRateLimiting()
         }
         Thread.Sleep(100);
     }
-
-    // Display the total requests processed in the first interval
-    int totalRequestsInFirstInterval = rateLimiter.GetTotalRequestsInWindow();
-    Console.WriteLine($"Total Requests Processed in 12:00:00 - 12:00:59: {totalRequestsInFirstInterval}");
 }
 
 void SlidingWindowRateLimiting()
 {
+    var rateLimiter = new SlidingWindowRateLimiter(3, TimeSpan.FromSeconds(1));
     // Create a Sliding Window Rate Limiter with a limit of 5 requests per window of 1 second
-    var rateLimiter = new SlidingWindowRateLimiter(limit: 2, windowMilliSeconds: 1000);
+    //var rateLimiter = new SlidingWindowRateLimiter(limit: 2, windowMilliSeconds: 1000);
 
     // Simulate 10 requests
-    for (int i = 1; i <= 10; i++)
+    rateLimiter.TryAcquire();
+    Thread.Sleep(600);
+    for (int i = 1; i <= 15; i++)
     {
         if (rateLimiter.TryAcquire())
         {
             Console.WriteLine($"Request {i}: Acquired. Processing...");
             // Simulate request processing
-            Thread.Sleep(200);
-            Console.WriteLine($"Request {i}: Processing completed.");
+            Thread.Sleep(100);
         }
         else
         {

@@ -35,41 +35,33 @@ namespace CloudPatterns.Rate_Limiting
             return $"{time:HHmmss}";
         }
 
+        private double GetPreviousWindowWeight(DateTime currentTime)
+        {
+            TimeSpan timePassedInSecond = currentTime.TimeOfDay;
+            double weight = (1000000 - timePassedInSecond.TotalMilliseconds * 1000) / 1000000;
+            weight = Math.Max(weight, 0); // Ensure weight is not negative
+            weight = Math.Min(weight, 1); // Ensure weight is not greater than 1
+            return weight;
+        }
+
         public bool TryAcquire()
         {
             lock (windowCounts)
             {
                 // Calculate the current window key and weight
                 var now = DateTime.Now;
-                string currentWindowKey = GetWindowKey(now);
-                double currentWindowWeight = (now - now.Date).TotalMilliseconds / windowMilliSeconds;
+                string currentWindowKey = GetWindowKey(now);//222822
 
-                // Check if the current window has expired and remove expired windows
-                var windowStart = now.AddMilliseconds(-windowMilliSeconds);
-                var expiredWindowKeys = new List<string>();
-                foreach (var key in windowCounts.Keys)
-                {
-                    Console.WriteLine(key == previousWindowKey);
-                    if (key != currentWindowKey && key != previousWindowKey)
-                    {
-                        if (DateTime.TryParseExact(key, "HHmmss", null, System.Globalization.DateTimeStyles.None, out var windowTime))
-                        {
-                            if (windowTime < windowStart)
-                                expiredWindowKeys.Add(key);
-                        }
-                    }
-                }
-                foreach (var key in expiredWindowKeys)
-                {
-                    windowCounts.Remove(key);
-                }
+                var currentDt = now - now.Date;
+                var currentMS = currentDt.TotalMilliseconds;
+                var previousWindowStart = now.AddMilliseconds(-windowMilliSeconds);
+                previousWindowKey = GetWindowKey(previousWindowStart);
+                
+                TimeSpan timePassedInSecond = now.TimeOfDay;
+                var previousWindowWeight = (1000000 - timePassedInSecond.TotalMilliseconds * 1000) / 1000000;
+                previousWindowWeight = Math.Max(previousWindowWeight, 0); // Ensure weight is not negative
+                previousWindowWeight = Math.Min(previousWindowWeight, 1); // Ensure weight is not greater than 1
 
-                // Check if a new window has started and update the previous window key and weight
-                if (currentWindowKey != previousWindowKey)
-                {
-                    previousWindowKey = currentWindowKey;
-                    previousWindowWeight = currentWindowWeight;
-                }
 
                 // Adjust the window counts based on the sliding window
                 int currentWindowCount = windowCounts.TryGetValue(currentWindowKey, out int count) ? count : 0;

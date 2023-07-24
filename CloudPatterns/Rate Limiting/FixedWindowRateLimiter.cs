@@ -9,47 +9,39 @@ namespace CloudPatterns.Rate_Limiting
 {
     public class FixedWindowRateLimiter
     {
-        private readonly int limit;
-        private readonly int windowMilliSeconds;
-        private readonly Queue<DateTime> requestTimes;
-        public readonly Stopwatch stopwatch;
+        private readonly int capacity;
+        private readonly TimeSpan windowDuration;
+        private DateTime windowStartTime;
+        private int requestCount;
 
-        public FixedWindowRateLimiter(int limit, int windowMilliSeconds)
+        public FixedWindowRateLimiter(int capacity, TimeSpan windowDuration)
         {
-            this.limit = limit;
-            this.windowMilliSeconds = windowMilliSeconds;
-            this.requestTimes = new Queue<DateTime>();
-            this.stopwatch = new Stopwatch();
+            this.capacity = capacity;
+            this.windowDuration = windowDuration;
+            this.requestCount = 0;
+            this.windowStartTime = DateTime.Now;
         }
 
         public bool TryAcquire()
         {
-            lock (requestTimes)
+            var now = DateTime.Now;
+
+            // Check if the current window has expired
+            if (now - windowStartTime >= windowDuration)
             {
-                var now = DateTime.Now;
-
-                // Remove expired requests from the queue
-                while (requestTimes.Count > 0 && (now - requestTimes.Peek()).TotalMilliseconds >= windowMilliSeconds)
-                {
-                    requestTimes.Dequeue();
-                }
-
-                if (requestTimes.Count < limit)
-                {
-                    requestTimes.Enqueue(now);
-                    return true; // Acquired a permit
-                }
-
-                return false; // Rate limit exceeded
+                // Reset the request count and update the window start time
+                requestCount = 0;
+                windowStartTime = now;
             }
-        }
 
-        public int GetTotalRequestsInWindow()
-        {
-            lock (requestTimes)
+            // Check if the current request can be allowed
+            if (requestCount < capacity)
             {
-                return requestTimes.Count;
+                requestCount++;
+                return true; // Acquired a permit
             }
+
+            return false; // Rate limit exceeded
         }
     }
 }
