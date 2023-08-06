@@ -1,8 +1,56 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using CloudPatterns.Circuit_Breaker;
+using CloudPatterns.Consistent_Hashing;
+using CloudPatterns.ID_Generator;
 using CloudPatterns.Rate_Limiting;
 using CloudPatterns.RetryPattern;
 
+#region ConsistentHashing-KeyValueDataStore
+
+string[] servers = { "Server-A", "Server-B", "Server-C" };
+KeyValueDataStore kvStore = new KeyValueDataStore();
+kvStore.Initialize(servers, 3);
+
+// Store and fetch data for demonstration
+kvStore.StoreData("data-1", "Value for data-1");
+kvStore.StoreData("data-2", "Value for data-2");
+kvStore.StoreData("data-3", "Value for data-3");
+kvStore.StoreData("data-4", "Value for data-4");
+
+
+kvStore.FetchData("data-1");
+kvStore.FetchData("data-2");
+kvStore.FetchData("data-3");
+kvStore.FetchData("data-4");
+
+
+kvStore.StoreData("data-5", "Value for data-5");
+kvStore.StoreData("data-6", "Value for data-6");
+
+// Fetch data after node failure
+kvStore.FetchData("data-1");
+kvStore.FetchData("data-2");
+kvStore.FetchData("data-3");
+kvStore.FetchData("data-4");
+kvStore.FetchData("data-5");
+kvStore.FetchData("data-6");
+
+#endregion
+
+
+#region HashKey
+
+string key = "tenant_Key";
+HashIDGenerator generator = new HashIDGenerator();
+string dynamoIdentifier = generator.GenerateDynamoIdentifier(key);
+Console.WriteLine("Dynamo Identifier: " + dynamoIdentifier);
+
+#endregion
+
+#region RateLimiting
+
+
+#endregion
 //SlidingWindowRateLimiting3();
 //SlidingWindowRateLimiting2();
 FixedWindowRateLimiting();
