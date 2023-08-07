@@ -13,7 +13,7 @@ namespace CloudPatterns.Consistent_Hashing
         public void Initialize(IEnumerable<string> nodes, int replicas = 3)
         {
             CHashing = new ConsistentHashing(nodes, replicas);
-            SimiluteNodeFialure();
+            //SimiluteNodeFialure();
         }
 
         private void SimiluteNodeFialure()
@@ -36,18 +36,20 @@ namespace CloudPatterns.Consistent_Hashing
             string replica = CHashing.GetCorrectReplica(server, key);
 
             CHashing.Storage[replica][key] = data;
-            Console.WriteLine($"Storing Key: {key} => Data: {data} on Server Replica: {replica}");
+            Console.WriteLine($"Storing Key: {key} => Data: {data} on Server Replica: {server}");
         }
 
         public string FetchData(string key)
         {
             string server = CHashing.GetNode(key);
             string replica = CHashing.GetCorrectReplica(server, key);
+            //string server = CHashing.GetNode(key);
+            //string replica = CHashing.GetCorrectReplica(server, key);
 
-            if (CHashing.Storage.ContainsKey(replica) && CHashing.Storage[replica].ContainsKey(key))
+            if (CHashing.Storage.ContainsKey(server) && CHashing.Storage[server].ContainsKey(key))
             {
-                string data = CHashing.Storage[replica][key];
-                Console.WriteLine($"Fetching Data for Key: {key} from Server Replica: {replica}");
+                string data = CHashing.Storage[server][key];
+                Console.WriteLine($"Fetching Data for Key: {key} from Server Replica: {server}");
                 return data;
             }
             else

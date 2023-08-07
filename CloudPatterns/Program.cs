@@ -7,6 +7,28 @@ using CloudPatterns.RetryPattern;
 
 #region ConsistentHashing-KeyValueDataStore
 
+ConsistentHashing2 ch = new ConsistentHashing2();
+
+ch.AddNode("Server-A");
+ch.AddNode("Server-B");
+ch.AddNode("Server-C");
+
+string data1 = "Data1";
+string data2 = "Data2";
+string data3 = "Data3";
+
+string assignedNode1 = ch.Store(data1, "value for data 1");
+string assignedNode2 = ch.Store(data2, "value for data 2");
+string assignedNode3 = ch.Store(data3, "value for data 3");
+
+Console.WriteLine($"Data1 is assigned to: {assignedNode1}");
+Console.WriteLine($"Data2 is assigned to: {assignedNode2}");
+Console.WriteLine($"Data3 is assigned to: {assignedNode3}");
+
+Console.WriteLine(ch.FetchData(data1));
+Console.WriteLine(ch.FetchData(data2));
+Console.WriteLine(ch.FetchData(data3));
+
 string[] servers = { "Server-A", "Server-B", "Server-C" };
 KeyValueDataStore kvStore = new KeyValueDataStore();
 kvStore.Initialize(servers, 3);
@@ -14,26 +36,26 @@ kvStore.Initialize(servers, 3);
 // Store and fetch data for demonstration
 kvStore.StoreData("data-1", "Value for data-1");
 kvStore.StoreData("data-2", "Value for data-2");
-kvStore.StoreData("data-3", "Value for data-3");
-kvStore.StoreData("data-4", "Value for data-4");
+kvStore.StoreData("master-3", "Value for master-3");
+kvStore.StoreData("master-4", "Value for master-4");
 
 
 kvStore.FetchData("data-1");
 kvStore.FetchData("data-2");
-kvStore.FetchData("data-3");
-kvStore.FetchData("data-4");
+kvStore.FetchData("master-3");
+kvStore.FetchData("master-4");
 
 
-kvStore.StoreData("data-5", "Value for data-5");
-kvStore.StoreData("data-6", "Value for data-6");
+kvStore.StoreData("Ankle-5", "Value for Ankle-5");
+kvStore.StoreData("Ankle-6", "Value for Ankle-6");
 
 // Fetch data after node failure
 kvStore.FetchData("data-1");
 kvStore.FetchData("data-2");
-kvStore.FetchData("data-3");
-kvStore.FetchData("data-4");
-kvStore.FetchData("data-5");
-kvStore.FetchData("data-6");
+kvStore.FetchData("master-3");
+kvStore.FetchData("master-4");
+kvStore.FetchData("Ankle-5");
+kvStore.FetchData("Ankle-6");
 
 #endregion
 
