@@ -10,7 +10,7 @@ namespace CloudPatterns.Consistent_Hashing
     public class ConsistentHashing2
     {
         private List<uint> ringKeys = new List<uint>();
-        private List<string> nodes = new List<string>(); // nodes present in the ring. nodes[i] is present at index keys[i]
+        private List<string> nodes = new List<string>(); // nodes present in the ring
         private int totalSlots = 50;
         private int replicas = 3; // number of replicas per server
         private Dictionary<string, Dictionary<string, string>> dataStorage;
