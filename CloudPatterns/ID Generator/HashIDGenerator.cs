@@ -41,5 +41,15 @@ namespace CloudPatterns.ID_Generator
                 return bit64.ToString();
             }
         }
+
+        private uint GetHash(string key, int totalSlots)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.UTF8.GetBytes(key);
+                byte[] hashBytes = sha256.ComputeHash(inputBytes);
+                return BitConverter.ToUInt32(hashBytes, 0) % (uint)totalSlots;
+            }
+        }
     }
 }

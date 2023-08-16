@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloudPatterns.RetryPattern
 {
-    public class RetryPattern
+    public class RetryPattern : IResiliencePolicy
     {
         private readonly int maxRetryAttempts;
         private readonly TimeSpan retryDelay;
@@ -17,7 +17,8 @@ namespace CloudPatterns.RetryPattern
             this.retryDelay = retryDelay;
         }
 
-        public async Task RetryAsync(Func<Task> asyncAction)
+
+        public async Task<T> ExecuteAsync<T>(Func<Task<T>> asyncAction)
         {
             int retryCount = 0;
 
@@ -25,8 +26,8 @@ namespace CloudPatterns.RetryPattern
             {
                 try
                 {
-                    await asyncAction(); // Execute the asynchronous operation
-                    return;              // If successful, exit the method
+                    T result = await asyncAction(); // Execute the asynchronous operation
+                    return result;              // If successful, exit the method
                 }
                 catch (TransientException ex)
                 {
@@ -42,11 +43,12 @@ namespace CloudPatterns.RetryPattern
                 {
                     // Handle other non-transient exceptions, if necessary
                     Console.WriteLine($"Non-Transient Exception: {ex.Message}");
-                    break;
+                    throw;
                 }
             }
 
             Console.WriteLine("Maximum retry attempts reached. The operation failed.");
+            throw new MaxRetryAttemptsReachedException();
         }
     }
 }

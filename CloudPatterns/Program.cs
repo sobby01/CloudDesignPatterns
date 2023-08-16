@@ -1,9 +1,19 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using CloudPatterns;
 using CloudPatterns.Circuit_Breaker;
 using CloudPatterns.Consistent_Hashing;
 using CloudPatterns.ID_Generator;
+using CloudPatterns.MessageQueue;
 using CloudPatterns.Rate_Limiting;
 using CloudPatterns.RetryPattern;
+
+#region Message Q
+
+MessageQueueHandler queueHandler = new MessageQueueHandler();
+queueHandler.Test();
+
+
+#endregion
 
 #region ConsistentHashing-KeyValueDataStore
 
@@ -253,20 +263,36 @@ async Task<string> SomeAsyncOperation()
 #endregion
 
 #region RetryPattern
-void RetryPattern()
+async Task<OperationResult<string>> RetryPattern()
 {
     int maxRetryAttempts = 3;
     TimeSpan retryDelay = TimeSpan.FromSeconds(2);
     var retryHandler = new RetryPattern(maxRetryAttempts, retryDelay);
 
-    // Call RetryAsync with the asynchronous operation to retry
-    retryHandler.RetryAsync(AsyncOperation).Wait();
+    try
+    {
+        // Execute the API logic
+        var result = await retryHandler.ExecuteAsync(async () =>
+    {
+        // API logic here...
+        // For example, making a call to a database or external service
+        return await AsyncOperation(); // Replace this with actual async operation
+    });
+
+        return new OperationResult<string> { IsSuccess = true, Data = "Success" };
+    }
+    catch (Exception ex)
+    {
+        // Handle other exceptions or return an error response
+        //return StatusCode(500, "An error occurred while processing your request.");
+        return new OperationResult<string> { IsSuccess = false, Data = "Failure", Message = "Error: " + ex.Message };
+    }
 
     Console.ReadLine();
 }
 
 
-async Task AsyncOperation()
+async Task<string> AsyncOperation()
 {
     // Simulate a transient failure
     if (new Random().Next(0, 10) < 8)
@@ -274,8 +300,10 @@ async Task AsyncOperation()
         throw new TransientException("Transient failure occurred.");
     }
 
-    await Task.Delay(100); // Simulate some asynchronous work
+    await Task.Delay(1000); // Simulate some asynchronous work
     Console.WriteLine("Async operation succeeded!");
+    return "Success";
+    
 }
 
 #endregion

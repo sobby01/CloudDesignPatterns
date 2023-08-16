@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CloudPatterns.Circuit_Breaker
 {
-    public class CircuitBreaker
+    public class CircuitBreaker : IResiliencePolicy
     {
         private readonly int failureThreshold;
         private readonly TimeSpan timeoutDuration;
@@ -16,7 +16,8 @@ namespace CloudPatterns.Circuit_Breaker
         private readonly ICircuitBreakerStateStore stateStore; 
         private readonly string circuitId;
 
-        public CircuitBreaker(string serviceName, int failureThreshold, TimeSpan timeoutDuration, ICircuitBreakerStateStore stateStore)
+        public CircuitBreaker(string serviceName, int failureThreshold, 
+            TimeSpan timeoutDuration, ICircuitBreakerStateStore stateStore)
         {
             this.failureThreshold = failureThreshold;
             this.timeoutDuration = timeoutDuration;
