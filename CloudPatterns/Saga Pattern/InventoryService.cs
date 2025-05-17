@@ -12,8 +12,8 @@ namespace CloudPatterns.Saga_Pattern
         {
             try
             {
-                // For simplicity, we'll assume the reservation is successful
-                await Task.Delay(1000); // Simulate async operation
+                // Reservation is successful
+                await Task.Delay(1000);
                 Console.WriteLine($"Inventory reserved for OrderId: {order.OrderId}");
                 // Update the order status to "InventoryReserved" or any appropriate status
                 order.Status = "InventoryReserved";
@@ -25,11 +25,10 @@ namespace CloudPatterns.Saga_Pattern
             }
         }
 
-        // Compensating action for ReserveInventory step
-        public async Task CompensateReserveInventoryStepAsync(Order order)
+        public async Task RevertReserveInventoryStepAsync(Order order)
         {
-            // Perform the compensation logic, e.g., release the reserved inventory
-            await Task.Delay(1000); // Simulate async operation
+            // Release the reserved inventory
+            await Task.Delay(1000);
             Console.WriteLine($"Inventory reservation for OrderId: {order.OrderId} needs to be released");
         }
     }

@@ -30,22 +30,22 @@ namespace CloudPatterns.Saga_Pattern
                     return initiateOrderResult;
                 }
 
-                // Step 2: Reserve Inventory (Async)
+                // Step 2: Reserve Inventory
                 var reserveInventoryResult = await _inventoryService.ReserveInventoryStepAsync(order);
                 if (!reserveInventoryResult.IsSuccess)
                 {
-                    // Step 2 failed, trigger compensating actions for previous steps
-                    await _saga.CompensateInitiateOrderStepAsync(order);
+                    // Step 2 failed, revert actions for previous steps
+                    await _saga.RevertInitiateOrderStepAsync(order);
                     return reserveInventoryResult;
                 }
 
-                // Step 3: Process Payment (Async)
+                // Step 3: Process Payment
                 var processPaymentResult = await _paymentService.ProcessPaymentStepAsync(order);
                 if (!processPaymentResult.IsSuccess)
                 {
-                    // Step 3 failed, trigger compensating actions for previous steps
-                    await _inventoryService.CompensateReserveInventoryStepAsync(order);
-                    await _saga.CompensateInitiateOrderStepAsync(order);
+                    // Step 3 failed, revert actions for previous steps
+                    await _inventoryService.RevertReserveInventoryStepAsync(order);
+                    await _saga.RevertInitiateOrderStepAsync(order);
                 }
 
                 return processPaymentResult;

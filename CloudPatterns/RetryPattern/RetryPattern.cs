@@ -31,6 +31,8 @@ namespace CloudPatterns.RetryPattern
                 }
                 catch (TransientException ex)
                 {
+                    //A transient error, also known as a transient fault, is an error that will resolve itself.
+                    //Most typically these errors manifest as a connection to the database server being dropped.
                     Console.WriteLine($"Transient Exception: {ex.Message}");
 
                     // Increment the retry count

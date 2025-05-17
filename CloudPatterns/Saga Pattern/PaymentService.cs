@@ -12,12 +12,11 @@ namespace CloudPatterns.Saga_Pattern
         {
             try
             {
-                // For simplicity, we'll simulate a payment failure
-                await Task.Delay(1000); // Simulate async operation
+                // Simulate a payment failure
+                await Task.Delay(1000);
                 Console.WriteLine($"Processing payment for OrderId: {order.OrderId}");
-                // Update the order status to "PaymentProcessed" or any appropriate status
+                // Update the order status to "PaymentProcessed"
                 order.Status = "PaymentProcessed";
-                // For this example, we'll return a failure result to simulate a payment failure
                 return new SagaStepResult { IsSuccess = false, ErrorMessage = "Payment failed" };
             }
             catch (Exception ex)
@@ -26,11 +25,10 @@ namespace CloudPatterns.Saga_Pattern
             }
         }
 
-        // Compensating action for ProcessPayment step
-        public async Task CompensateProcessPaymentStepAsync(Order order)
+        public async Task RevertProcessPaymentStepAsync(Order order)
         {
-            // Perform the compensation logic, e.g., refund the payment
-            await Task.Delay(1000); // Simulate async operation
+            // Refund the payment
+            await Task.Delay(1000);
             Console.WriteLine($"Payment for OrderId: {order.OrderId} needs to be refunded");
         }
     }
